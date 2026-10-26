@@ -20,11 +20,6 @@ from typing import Sequence
 
 import colorlog
 
-import os
-
-import uvicorn
-
-
 LOG = logging.getLogger(__name__)
 
 
@@ -156,21 +151,7 @@ def run(args: argparse.Namespace) -> int:
     else:
         LOG.info("No input provided.")
 
-    host = os.getenv("API_HOST", "0.0.0.0")
-    port = int(os.getenv("API_PORT", "8080"))
-
-    LOG.info("Starting Deadman Switch API on %s:%d", host, port)
-
-    uvicorn.run(
-        "deadman_switch.api:app",
-        host=host,
-        port=port,
-        log_level="debug"
-        if args.verbose >= 2
-        else "info"
-        if args.verbose == 1
-        else "warning",
-    )
+    # TODO add code...
 
     return 0
 
