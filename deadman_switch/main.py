@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import getpass
 import logging
+import shutil
 import sys
 import tempfile
 import time
@@ -25,7 +26,7 @@ from typing import Sequence
 
 import colorlog
 
-from deadman_switch import config, notifier, password, service
+from deadman_switch import config, notifier, password, service, units
 from deadman_switch.challenge import Challenger
 from deadman_switch.clock import Clock
 from deadman_switch.notifier.printer import Printer
@@ -122,6 +123,18 @@ def _build_parser(prog: str) -> argparse.ArgumentParser:
     )
 
     commands.add_parser("set-password", help="Set the password the challenge asks for.")
+
+    units_parser = commands.add_parser(
+        "systemd-units", help="Write the systemd service and timer."
+    )
+    units_parser.add_argument(
+        "--out", type=Path, required=True, help="Directory to write the units to."
+    )
+    units_parser.add_argument(
+        "--user",
+        default=getpass.getuser(),
+        help="User the service runs as (default: the current user).",
+    )
 
     return parser
 
@@ -262,6 +275,19 @@ def _set_password(path: Path) -> int:
     return EXIT_OK
 
 
+def _systemd_units(cfg: config.Config, args: argparse.Namespace) -> int:
+    executable = shutil.which("deadman-switch") or Path(sys.argv[0]).resolve()
+    rendered = units.render(
+        executable=Path(executable),
+        config=args.config,
+        user=args.user,
+        trigger=cfg.system.trigger,
+    )
+    for path in units.write(args.out, rendered):
+        LOG.info("Wrote %s", path)
+    return EXIT_OK
+
+
 def run(args: argparse.Namespace) -> int:
     LOG.debug("Arguments: %s", args)
 
@@ -269,6 +295,9 @@ def run(args: argparse.Namespace) -> int:
         return _set_password(args.config)
 
     cfg = config.load(args.config)
+    if args.command == "systemd-units":
+        return _systemd_units(cfg, args)
+
     if args.command == "check":
         return _check(cfg)
 

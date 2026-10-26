@@ -1,0 +1,44 @@
+"""
+Copyright (c) 2026 Apache-2.0 license
+
+@file
+@brief  Tests for the rendered systemd units
+"""
+
+from datetime import timedelta
+from pathlib import Path
+
+from deadman_switch import units
+
+
+def _render():
+    return units.render(
+        executable=Path("/usr/local/bin/deadman-switch"),
+        config=Path("/etc/deadman-switch/config.toml"),
+        user="watcher",
+        trigger=timedelta(hours=12),
+    )
+
+
+def test_timer_interval_follows_the_trigger():
+    assert "OnUnitActiveSec=43200s" in _render()["deadman-switch.timer"]
+
+
+def test_service_runs_the_switch_with_retries():
+    service = _render()["deadman-switch.service"]
+
+    assert (
+        "ExecStart=/usr/local/bin/deadman-switch --config /etc/deadman-switch/config.toml run"
+        in service
+    )
+    assert "User=watcher" in service
+    assert "RestartSec=5min" in service
+    assert "TimeoutStartSec=infinity" in service
+
+
+def test_writes_both_units(tmp_path):
+    written = units.write(tmp_path, _render())
+    assert sorted(path.name for path in written) == [
+        "deadman-switch.service",
+        "deadman-switch.timer",
+    ]
