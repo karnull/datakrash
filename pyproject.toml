@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "deadman-switch"
+dynamic = ["version"]
+description = "Track yourself. Trigger actions when unreachable."
+authors = [
+    { name = "" },
+]
+readme = "README.md"
+requires-python = "==3.13.*"
+dependencies = [
+    "colorlog>=6.12.0",
+    "fastapi>=0.136.3",
+    "uvicorn>=0.49.0",
+]
+
+[project.scripts]
+main = "deadman_switch.main:main"
+
+# setuptools reads VERSION, the version CI releases
+[tool.setuptools.dynamic]
+version = { file = "VERSION" }
+
+[tool.setuptools.packages.find]
+include = ["deadman_switch*"]
+
+[tool.uv]
+package = true
+# rebuild the installed project when VERSION changes, so its metadata stays current
+cache-keys = [{ file = "pyproject.toml" }, { file = "VERSION" }]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.17.1",
+]

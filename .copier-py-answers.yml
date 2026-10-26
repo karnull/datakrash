@@ -1,0 +1,10 @@
+
+# .copier-py-answers.yml.jinja
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: v3.0.1
+_src_path: https://github.com/karshosphere/template-python
+lib_pack:
+- WebServer
+project_description: Track yourself. Trigger actions when unreachable.
+project_name_raw: Deadman Switch
+project_slug: deadman-switch
