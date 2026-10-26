@@ -13,14 +13,50 @@ Copyright (c) 2026 Apache-2.0 license
 from __future__ import annotations
 
 import argparse
+import getpass
 import logging
 import sys
+import tempfile
 import time
+from dataclasses import replace
+from datetime import timedelta
+from pathlib import Path
 from typing import Sequence
 
 import colorlog
 
+from deadman_switch import config, notifier, password, service
+from deadman_switch.challenge import Challenger
+from deadman_switch.clock import Clock
+from deadman_switch.notifier.printer import Printer
+from deadman_switch.ntfy import Ntfy
+from deadman_switch.service import CheckFailed
+from deadman_switch.service.base import Service
+from deadman_switch.state import StateStore
+from deadman_switch.watch import EXIT_FAILED, EXIT_OK, Watch
+
 LOG = logging.getLogger(__name__)
+
+DRILL_REPLY_WINDOW = timedelta(seconds=60)
+DRILL_SPEED = 3600
+
+
+class Quiet(Service):
+    """Stands in for a real service in `drill --silent`."""
+
+    def check_activity(self, since) -> bool:
+        return False
+
+
+class _DrillFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        record.msg = f"[DRILL] {record.msg}"
+        return True
+
+
+def _mark_drill() -> None:
+    for handler in logging.getLogger().handlers:
+        handler.addFilter(_DrillFilter())
 
 
 # ==============================================================================
@@ -61,13 +97,31 @@ def _build_parser(prog: str) -> argparse.ArgumentParser:
         help="Optional path to a log file.",
     )
 
-    # TODO Example project arg (remove/replace as needed)
     parser.add_argument(
-        "input",
-        nargs="?",
-        default=None,
-        help="Optional input (example positional argument).",
+        "--config",
+        type=Path,
+        default=config.DEFAULT_PATH,
+        help=f"Path to config.toml (default: {config.DEFAULT_PATH}).",
     )
+
+    commands = parser.add_subparsers(dest="command", required=True, metavar="COMMAND")
+    commands.add_parser(
+        "run", help="Check services and act on the result; what the timer runs."
+    )
+    commands.add_parser(
+        "check", help="Show each service's result without challenging or notifying."
+    )
+
+    drill = commands.add_parser(
+        "drill", help="Rehearse a full run with nothing sent to the contact."
+    )
+    drill.add_argument(
+        "--silent",
+        action="store_true",
+        help="Treat every service as quiet, so the challenge always starts.",
+    )
+
+    commands.add_parser("set-password", help="Set the password the challenge asks for.")
 
     return parser
 
@@ -97,6 +151,8 @@ def _configure_logging(level: int, log_file: str | None) -> None:
 
     root = logging.getLogger()
     root.setLevel(level)
+    # request URLs carry ntfy topic names and account ids, which stay out of the journal
+    logging.getLogger("httpx").setLevel(logging.WARNING)
     root.handlers.clear()
 
     is_tty = hasattr(sys.stderr, "isatty") and sys.stderr.isatty()
@@ -129,7 +185,7 @@ def _configure_logging(level: int, log_file: str | None) -> None:
         file_handler.setFormatter(
             logging.Formatter(
                 fmt="%(levelname)s\t%(asctime)s %(name)s: %(message)s",
-                datefmt="%Y-%m-%d %H:%M:%S",
+                datefmt="%Y-%m-%d %H:%M:%S %z",
             )
         )
         root.addHandler(file_handler)
@@ -139,21 +195,92 @@ def _configure_logging(level: int, log_file: str | None) -> None:
 # Program Start Point
 
 
-def run(args: argparse.Namespace) -> int:
-    """
-    Put your actual app logic here.
-    """
+def _build_watch(
+    cfg: config.Config, *, drill: bool = False, silent: bool = False
+) -> Watch:
+    stored_hash = password.read(cfg.challenge.password_file)
+    if not cfg.contact.message.is_file():
+        raise config.ConfigError(
+            f"contact.message {cfg.contact.message} does not exist"
+        )
 
+    settings = cfg.challenge
+    contact = cfg.contact
+    services = service.build(cfg.services)
+    routes = notifier.routes(contact, notifier.build(cfg.notifiers))
+    store = StateStore(cfg.system.state)
+
+    if drill:
+        settings = replace(settings, reply_window=DRILL_REPLY_WINDOW)
+        contact = replace(
+            contact, schedule=tuple(offset / DRILL_SPEED for offset in contact.schedule)
+        )
+        routes = [
+            (Printer(n.channel, n.address_field), address) for n, address in routes
+        ]
+        store = StateStore(
+            Path(tempfile.mkdtemp(prefix="deadman-drill-")) / "state.json"
+        )
+        if silent:
+            services = [Quiet(s.name, s.settings) for s in services]
+
+    clock = Clock()
+    ntfy = Ntfy(settings.server, settings.token)
+    challenger = Challenger(
+        settings, ntfy, stored_hash, clock, label="[DRILL] " if drill else ""
+    )
+    return Watch(services, routes, contact, challenger, store, clock)
+
+
+def _check(cfg: config.Config) -> int:
+    now = Clock().now()
+    for svc in service.build(cfg.services):
+        try:
+            result = (
+                "activity" if svc.check_activity(now - svc.duration) else "no activity"
+            )
+        except CheckFailed as exc:
+            result = f"failed to connect ({exc})"
+        print(
+            f"{svc.name}: {result} in the last {config.format_duration(svc.duration)}"
+        )
+    return EXIT_OK
+
+
+def _set_password(path: Path) -> int:
+    target = config.password_path(path)
+    first = getpass.getpass("New password: ")
+    if not first.strip():
+        LOG.error("The password cannot be empty")
+        return EXIT_FAILED
+    if getpass.getpass("Again: ") != first:
+        LOG.error("The passwords do not match; nothing was changed")
+        return EXIT_FAILED
+
+    password.write(target, first.strip())
+    LOG.info("Password hash written to %s", target)
+    return EXIT_OK
+
+
+def run(args: argparse.Namespace) -> int:
     LOG.debug("Arguments: %s", args)
 
-    if args.input:
-        LOG.info("Got input: %s", args.input)
-    else:
-        LOG.info("No input provided.")
+    if args.command == "set-password":
+        return _set_password(args.config)
 
-    # TODO add code...
+    cfg = config.load(args.config)
+    if args.command == "check":
+        return _check(cfg)
 
-    return 0
+    if args.command == "drill":
+        _mark_drill()
+        LOG.info(
+            "Drill: the contact schedule runs %d times faster than real time",
+            DRILL_SPEED,
+        )
+        return _build_watch(cfg, drill=True, silent=args.silent).run()
+
+    return _build_watch(cfg).run()
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -164,21 +291,6 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     parser = _build_parser(prog=prog)
 
-    # Inject version from package if available
-    try:
-        from . import __version__  # type: ignore
-
-        parser.set_defaults(_version=__version__)
-        parser._defaults["version"] = __version__  # for action="version"
-        parser.version = __version__  # best-effort for some argparse behaviors
-        parser.add_argument(
-            "--_internal_version", action="store_true", help=argparse.SUPPRESS
-        )
-        # Note: argparse's "version" action uses `version=` at add_argument time.
-        # We keep a simple approach: leave __init__.__version__ for external access.
-    except Exception:
-        pass
-
     args = parser.parse_args(argv)
 
     level = _resolve_log_level(args)
@@ -187,6 +299,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         code = run(args)
         return int(code) if code is not None else 0
+
+    except (config.ConfigError, password.PasswordError) as exc:
+        LOG.error("%s", exc)
+        return EXIT_FAILED
 
     except KeyboardInterrupt:
         LOG.warning("Interrupted by user (Ctrl+C).")

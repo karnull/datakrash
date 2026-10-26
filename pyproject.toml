@@ -18,7 +18,7 @@ dependencies = [
 ]
 
 [project.scripts]
-main = "deadman_switch.main:main"
+deadman-switch = "deadman_switch.main:main"
 
 # setuptools reads VERSION, the version CI releases
 [tool.setuptools.dynamic]
