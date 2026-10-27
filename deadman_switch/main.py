@@ -2,7 +2,6 @@
 Copyright (c) 2026 Apache-2.0 license
 
 @file
-@author
 @brief  Main file
 """
 
