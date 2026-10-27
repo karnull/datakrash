@@ -2,13 +2,12 @@
 Copyright (c) 2026 Apache-2.0 license
 
 @file
-@author
 @brief  Main entry point
 """
 
 import sys
 
-from deadman_switch.main import main
+from datakrash.main import main
 
 if __name__ == "__main__":
     sys.exit(main())

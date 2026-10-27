@@ -1,5 +1,5 @@
 {
-    "name": "deadman-switch-dockerfile",
+    "name": "datakrash-dockerfile",
 
     "build": {
         "dockerfile": "${localWorkspaceFolder}/Dockerfile",

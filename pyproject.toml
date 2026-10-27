@@ -3,7 +3,7 @@ requires = ["setuptools>=80"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "deadman-switch"
+name = "datakrash"
 dynamic = ["version"]
 description = "Track yourself. Trigger actions when unreachable."
 authors = [
@@ -13,19 +13,19 @@ readme = "README.md"
 requires-python = "==3.13.*"
 dependencies = [
     "colorlog>=6.12.0",
-    "fastapi>=0.136.3",
-    "uvicorn>=0.49.0",
+    "garminconnect>=0.3.20",
+    "httpx>=0.28.1",
 ]
 
 [project.scripts]
-main = "deadman_switch.main:main"
+datakrash = "datakrash.main:main"
 
 # setuptools reads VERSION, the version CI releases
 [tool.setuptools.dynamic]
 version = { file = "VERSION" }
 
 [tool.setuptools.packages.find]
-include = ["deadman_switch*"]
+include = ["datakrash*"]
 
 [tool.uv]
 package = true

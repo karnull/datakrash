@@ -1,0 +1,55 @@
+# Durations are written as days, hours and minutes: "3d", "12h", "1h30m".
+# Any key ending in _env names an environment variable that holds the value,
+# so secrets can live in /etc/datakrash/env rather than in this file.
+
+[system]
+trigger = "12h"
+state = "/var/lib/datakrash/state.json"
+
+# Asks you for your password over ntfy when no service shows activity.
+[challenge]
+server = "https://ntfy.sh"
+topic = "change-me-datakrash-prompt"
+reply_topic = "change-me-datakrash-reply"
+token_env = "DATAKRASH_NTFY_TOKEN"
+password_file = "/etc/datakrash/password.hash"
+reply_window = "1h"
+attempts = 3
+
+# Messaged on every channel set once the challenge fails.
+[contact]
+name = "Example Contact"
+email = "contact@example.com"
+phone = ""
+message = "/etc/datakrash/message.txt"
+subject = "A message left for you"
+schedule = ["0h", "1h30m", "3h", "1d", "2d", "3d", "4d", "5d", "6d"]
+
+[notifier.email]
+provider = "smtp"
+host = "smtp.example.com"
+port = 587
+security = "starttls"
+username = "me@example.com"
+password_env = "DATAKRASH_SMTP_PASSWORD"
+sender = "me@example.com"
+
+[notifier.sms]
+provider = "twilio"
+account_sid = "ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+token_env = "DATAKRASH_TWILIO_TOKEN"
+sender = "+15550000000"
+
+# Checked in the order listed. The first one showing activity ends the run.
+[service.github]
+enabled = true
+username = "example-user"
+token_env = "DATAKRASH_GITHUB_TOKEN"
+duration = "3d"
+
+[service.garmin]
+enabled = false
+email = "me@example.com"
+password_env = "DATAKRASH_GARMIN_PASSWORD"
+tokens = "/var/lib/datakrash/garmin"
+duration = "2d"
