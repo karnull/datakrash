@@ -12,12 +12,12 @@ from urllib.parse import parse_qs
 import httpx
 import pytest
 
-from deadman_switch import notifier
-from deadman_switch.config import ConfigError, ContactConfig
-from deadman_switch.notifier import NotifyFailed
-from deadman_switch.notifier import smtp as smtp_module
-from deadman_switch.notifier.smtp import Smtp
-from deadman_switch.notifier.twilio import Twilio
+from datakrash import notifier
+from datakrash.config import ConfigError, ContactConfig
+from datakrash.notifier import NotifyFailed
+from datakrash.notifier import smtp as smtp_module
+from datakrash.notifier.smtp import Smtp
+from datakrash.notifier.twilio import Twilio
 
 SMTP = {
     "provider": "smtp",

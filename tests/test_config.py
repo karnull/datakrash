@@ -9,8 +9,8 @@ from datetime import timedelta
 
 import pytest
 
-from deadman_switch import config
-from deadman_switch.config import ConfigError, format_duration, parse_duration
+from datakrash import config
+from datakrash.config import ConfigError, format_duration, parse_duration
 
 ENV = {"NTFY": "ntfy-token", "GH": "gh-token"}
 
@@ -126,10 +126,10 @@ def test_example_config_is_valid():
     example = config.load(
         config.Path(__file__).parent.parent / "config.example.toml",
         {
-            "DEADMAN_NTFY_TOKEN": "x",
-            "DEADMAN_SMTP_PASSWORD": "x",
-            "DEADMAN_TWILIO_TOKEN": "x",
-            "DEADMAN_GITHUB_TOKEN": "x",
+            "DATAKRASH_NTFY_TOKEN": "x",
+            "DATAKRASH_SMTP_PASSWORD": "x",
+            "DATAKRASH_TWILIO_TOKEN": "x",
+            "DATAKRASH_GITHUB_TOKEN": "x",
         },
     )
     assert "github" in example.services

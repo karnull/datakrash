@@ -11,13 +11,13 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 
-from deadman_switch.challenge import Challenger, first_password
-from deadman_switch.clock import Clock
-from deadman_switch.config import ContactConfig, format_duration
-from deadman_switch.notifier import Notifier, NotifyFailed
-from deadman_switch.ntfy import NtfyError
-from deadman_switch.service import CheckFailed, Service
-from deadman_switch.state import (
+from datakrash.challenge import Challenger, first_password
+from datakrash.clock import Clock
+from datakrash.config import ContactConfig, format_duration
+from datakrash.notifier import Notifier, NotifyFailed
+from datakrash.ntfy import NtfyError
+from datakrash.service import CheckFailed, Service
+from datakrash.state import (
     ARMED,
     CHALLENGE,
     FIRED,
@@ -112,7 +112,7 @@ class Watch:
         self.challenger.notice(
             f"No proof of life. Your contact is being messaged {len(state.sends)} times over the coming days. "
             f"Reply with your password on {self.challenger.settings.reply_topic} to stop further messages.",
-            title="Deadman switch fired",
+            title="Datakrash fired",
         )
 
     def _work_schedule(self, state: State) -> tuple[int, str]:

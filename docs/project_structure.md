@@ -1,4 +1,4 @@
-# Deadman Switch Structure
+# Datakrash Structure
 
 ## Overview
 
@@ -6,7 +6,7 @@ A command-line tool, run by a systemd timer, that looks for recent activity on a
 
 ## Top-Level Layout
 
-* `deadman_switch/`: the package
+* `datakrash/`: the package
 * `tests/`: pytest suite; `tests/fakes.py` holds the fake clock, ntfy server, services and notifiers
 * `config.example.toml`: every configuration setting, documented
 * `docs/`: this file

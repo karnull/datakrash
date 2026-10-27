@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import httpx
 
-from deadman_switch.notifier.base import Notifier, NotifyFailed
+from datakrash.notifier.base import Notifier, NotifyFailed
 
 API = "https://api.twilio.com/2010-04-01"
 

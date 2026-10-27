@@ -12,8 +12,8 @@ import inspect
 import pkgutil
 from typing import Any
 
-from deadman_switch.config import ConfigError, ContactConfig
-from deadman_switch.notifier.base import Notifier, NotifyFailed
+from datakrash.config import ConfigError, ContactConfig
+from datakrash.notifier.base import Notifier, NotifyFailed
 
 __all__ = ["Notifier", "NotifyFailed", "available", "build", "routes"]
 

@@ -11,11 +11,11 @@ from pathlib import Path
 import httpx
 import pytest
 
-from deadman_switch import password
-from deadman_switch.challenge import Challenger
-from deadman_switch.config import ChallengeConfig
-from deadman_switch.ntfy import Ntfy, NtfyError
-from deadman_switch.state import Challenge
+from datakrash import password
+from datakrash.challenge import Challenger
+from datakrash.config import ChallengeConfig
+from datakrash.ntfy import Ntfy, NtfyError
+from datakrash.state import Challenge
 from tests.fakes import FakeClock, FakeNtfy
 
 HASH = password.hash_password("correct horse")

@@ -3,7 +3,7 @@ requires = ["setuptools>=80"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "deadman-switch"
+name = "datakrash"
 dynamic = ["version"]
 description = "Track yourself. Trigger actions when unreachable."
 authors = [
@@ -18,14 +18,14 @@ dependencies = [
 ]
 
 [project.scripts]
-deadman-switch = "deadman_switch.main:main"
+datakrash = "datakrash.main:main"
 
 # setuptools reads VERSION, the version CI releases
 [tool.setuptools.dynamic]
 version = { file = "VERSION" }
 
 [tool.setuptools.packages.find]
-include = ["deadman_switch*"]
+include = ["datakrash*"]
 
 [tool.uv]
 package = true

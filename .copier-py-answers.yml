@@ -5,5 +5,5 @@ _commit: v3.0.1
 _src_path: https://github.com/karshosphere/template-python
 lib_pack: []
 project_description: Track yourself. Trigger actions when unreachable.
-project_name_raw: Deadman Switch
-project_slug: deadman-switch
+project_name_raw: Datakrash
+project_slug: datakrash

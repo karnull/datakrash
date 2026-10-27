@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from deadman_switch.service.base import CheckFailed, Service
+from datakrash.service.base import CheckFailed, Service
 
 
 class Garmin(Service):

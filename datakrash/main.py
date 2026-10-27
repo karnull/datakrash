@@ -25,15 +25,15 @@ from typing import Sequence
 
 import colorlog
 
-from deadman_switch import config, notifier, password, service, units
-from deadman_switch.challenge import Challenger
-from deadman_switch.clock import Clock
-from deadman_switch.notifier.printer import Printer
-from deadman_switch.ntfy import Ntfy
-from deadman_switch.service import CheckFailed
-from deadman_switch.service.base import Service
-from deadman_switch.state import StateStore
-from deadman_switch.watch import EXIT_FAILED, EXIT_OK, Watch
+from datakrash import config, notifier, password, service, units
+from datakrash.challenge import Challenger
+from datakrash.clock import Clock
+from datakrash.notifier.printer import Printer
+from datakrash.ntfy import Ntfy
+from datakrash.service import CheckFailed
+from datakrash.service.base import Service
+from datakrash.state import StateStore
+from datakrash.watch import EXIT_FAILED, EXIT_OK, Watch
 
 LOG = logging.getLogger(__name__)
 
@@ -231,7 +231,7 @@ def _build_watch(
             (Printer(n.channel, n.address_field), address) for n, address in routes
         ]
         store = StateStore(
-            Path(tempfile.mkdtemp(prefix="deadman-drill-")) / "state.json"
+            Path(tempfile.mkdtemp(prefix="datakrash-drill-")) / "state.json"
         )
         if silent:
             services = [Quiet(s.name, s.settings) for s in services]
@@ -275,7 +275,7 @@ def _set_password(path: Path) -> int:
 
 
 def _systemd_units(cfg: config.Config, args: argparse.Namespace) -> int:
-    executable = shutil.which("deadman-switch") or Path(sys.argv[0]).resolve()
+    executable = shutil.which("datakrash") or Path(sys.argv[0]).resolve()
     rendered = units.render(
         executable=Path(executable),
         config=args.config,

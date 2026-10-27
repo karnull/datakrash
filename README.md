@@ -1,4 +1,4 @@
-# Deadman Switch
+# Datakrash
 
 Track yourself. Trigger actions when unreachable.
 
@@ -8,7 +8,7 @@ Track yourself. Trigger actions when unreachable.
 
 ## How it works
 
-A systemd timer runs `deadman-switch run` every `system.trigger`. Each run:
+A systemd timer runs `datakrash run` every `system.trigger`. Each run:
 
 1. Asks every enabled service, in the order they appear in the config, whether there has been activity within that service's `duration`. The first one that says yes ends the run.
 2. Skips a service that cannot be reached, and tells you over ntfy that its check failed to connect.
@@ -34,41 +34,41 @@ $ make build
 
 ### Configure
 
-1. Copy `config.example.toml` to `/etc/deadman-switch/config.toml` and fill it in. Every setting is described there.
-2. Put secrets in `/etc/deadman-switch/env`, one `NAME=value` per line, matching the `*_env` keys in the config, and make it readable by root only:
+1. Copy `config.example.toml` to `/etc/datakrash/config.toml` and fill it in. Every setting is described there.
+2. Put secrets in `/etc/datakrash/env`, one `NAME=value` per line, matching the `*_env` keys in the config, and make it readable by root only:
 
    ```bash
-   $ sudo install -m 600 /dev/null /etc/deadman-switch/env
+   $ sudo install -m 600 /dev/null /etc/datakrash/env
    ```
 
 3. Write the message for your contact to the file named in `contact.message`.
 4. Set the password the challenge asks for. Only an scrypt hash is stored:
 
    ```bash
-   $ sudo deadman-switch --config /etc/deadman-switch/config.toml set-password
+   $ sudo datakrash --config /etc/datakrash/config.toml set-password
    ```
 
 5. Check that every service answers:
 
    ```bash
-   $ deadman-switch --config /etc/deadman-switch/config.toml check
+   $ datakrash --config /etc/datakrash/config.toml check
    ```
 
 ### Install the timer
 
 ```bash
-$ deadman-switch --config /etc/deadman-switch/config.toml systemd-units --out ./units --user "$USER"
-$ sudo cp units/deadman-switch.* /etc/systemd/system/
+$ datakrash --config /etc/datakrash/config.toml systemd-units --out ./units --user "$USER"
+$ sudo cp units/datakrash.* /etc/systemd/system/
 $ sudo systemctl daemon-reload
-$ sudo systemctl enable --now deadman-switch.timer
+$ sudo systemctl enable --now datakrash.timer
 ```
 
-The service user needs to be able to read the config, the message file and the password hash. Its state lives in `/var/lib/deadman-switch/`. Follow it with `journalctl -u deadman-switch`.
+The service user needs to be able to read the config, the message file and the password hash. Its state lives in `/var/lib/datakrash/`. Follow it with `journalctl -u datakrash`.
 
 ### Drill
 
 ```bash
-$ deadman-switch --config /etc/deadman-switch/config.toml drill --silent
+$ datakrash --config /etc/datakrash/config.toml drill --silent
 ```
 
 Runs the whole sequence with every service treated as quiet. The ntfy prompts are real, so you can test replying, but the reply window is one minute, the contact schedule runs 3600 times faster, and messages to the contact are only logged. Nothing reaches the contact. Every log line is marked `[DRILL]`, and the real state file is left alone.
@@ -82,9 +82,9 @@ Runs the whole sequence with every service treated as quiet. The ntfy prompts ar
 
 ### Adding a service
 
-Add a module to `deadman_switch/service/` that defines one subclass of `Service` with a `check_activity(since)` method. Return `True` for activity at or after `since` (UTC), return `False` for none, and raise `CheckFailed` when the service cannot be asked. Then enable it with a `[service.<module name>]` section in the config. Its settings arrive in `self.settings`.
+Add a module to `datakrash/service/` that defines one subclass of `Service` with a `check_activity(since)` method. Return `True` for activity at or after `since` (UTC), return `False` for none, and raise `CheckFailed` when the service cannot be asked. Then enable it with a `[service.<module name>]` section in the config. Its settings arrive in `self.settings`.
 
-Notifiers work the same way in `deadman_switch/notifier/`, selected with `provider = "<module name>"`.
+Notifiers work the same way in `datakrash/notifier/`, selected with `provider = "<module name>"`.
 
 
 

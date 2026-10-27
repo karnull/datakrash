@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 
-from deadman_switch.notifier.base import Notifier
+from datakrash.notifier.base import Notifier
 
 LOG = logging.getLogger(__name__)
 

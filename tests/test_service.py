@@ -11,10 +11,10 @@ from datetime import datetime, timedelta, timezone
 import httpx
 import pytest
 
-from deadman_switch import service
-from deadman_switch.config import ConfigError
-from deadman_switch.service import CheckFailed
-from deadman_switch.service.github import GitHub
+from datakrash import service
+from datakrash.config import ConfigError
+from datakrash.service import CheckFailed
+from datakrash.service.github import GitHub
 
 NOW = datetime(2026, 10, 26, 12, 0, tzinfo=timezone.utc)
 SINCE = NOW - timedelta(days=3)
@@ -41,15 +41,13 @@ def test_lists_shipped_services():
 
 def test_discovers_a_new_service_module(tmp_path, monkeypatch):
     (tmp_path / "carrier_pigeon.py").write_text(
-        "from deadman_switch.service.base import Service\n"
+        "from datakrash.service.base import Service\n"
         "class CarrierPigeon(Service):\n"
         "    def check_activity(self, since):\n"
         "        return True\n"
     )
     monkeypatch.setattr(service, "__path__", [*service.__path__, str(tmp_path)])
-    monkeypatch.delitem(
-        sys.modules, "deadman_switch.service.carrier_pigeon", raising=False
-    )
+    monkeypatch.delitem(sys.modules, "datakrash.service.carrier_pigeon", raising=False)
 
     [built] = service.build({"carrier_pigeon": {"duration": timedelta(days=1)}})
     assert built.check_activity(SINCE) is True

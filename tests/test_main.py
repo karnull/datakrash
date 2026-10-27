@@ -7,7 +7,7 @@ Copyright (c) 2026 Apache-2.0 license
 
 import logging
 
-from deadman_switch.main import _build_parser, _resolve_log_level
+from datakrash.main import _build_parser, _resolve_log_level
 
 
 def test_logs_at_info_by_default():

@@ -10,11 +10,11 @@ from pathlib import Path
 
 import pytest
 
-from deadman_switch import password
-from deadman_switch.challenge import Challenger
-from deadman_switch.config import ChallengeConfig, ContactConfig, parse_duration
-from deadman_switch.state import ARMED, FIRED, SPENT, StateStore
-from deadman_switch.watch import EXIT_FAILED, EXIT_OK, EXIT_TEMPFAIL, Watch
+from datakrash import password
+from datakrash.challenge import Challenger
+from datakrash.config import ChallengeConfig, ContactConfig, parse_duration
+from datakrash.state import ARMED, FIRED, SPENT, StateStore
+from datakrash.watch import EXIT_FAILED, EXIT_OK, EXIT_TEMPFAIL, Watch
 from tests.fakes import FakeClock, FakeNtfy, FakeService, RecordingNotifier, failing
 
 SCHEDULE = tuple(
@@ -130,7 +130,7 @@ def test_full_schedule_reaches_the_contact_nine_times(tmp_path):
     fired_at = state.fired_at
     assert fired_at - start == timedelta(hours=3)
     assert [send.due - fired_at for send in state.sends] == list(SCHEDULE)
-    assert "Deadman switch fired" in rig.ntfy.titles()
+    assert "Datakrash fired" in rig.ntfy.titles()
 
 
 def test_spent_switch_does_not_repeat(tmp_path):

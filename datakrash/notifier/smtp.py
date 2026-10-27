@@ -11,7 +11,7 @@ import smtplib
 import ssl
 from email.message import EmailMessage
 
-from deadman_switch.notifier.base import HTTP_TIMEOUT, Notifier, NotifyFailed
+from datakrash.notifier.base import HTTP_TIMEOUT, Notifier, NotifyFailed
 
 
 class Smtp(Notifier):

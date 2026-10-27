@@ -11,7 +11,7 @@ from datetime import datetime
 
 import httpx
 
-from deadman_switch.service.base import CheckFailed, Service
+from datakrash.service.base import CheckFailed, Service
 
 API = "https://api.github.com"
 

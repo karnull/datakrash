@@ -9,8 +9,8 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from deadman_switch.service import CheckFailed
-from deadman_switch.service.garmin import Garmin
+from datakrash.service import CheckFailed
+from datakrash.service.garmin import Garmin
 
 SINCE = datetime(2026, 10, 24, 12, 0, tzinfo=timezone.utc)
 

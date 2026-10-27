@@ -12,11 +12,11 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Callable
 
-from deadman_switch import password
-from deadman_switch.clock import Clock
-from deadman_switch.config import ChallengeConfig, format_duration
-from deadman_switch.ntfy import Message, Ntfy, NtfyError
-from deadman_switch.state import Challenge
+from datakrash import password
+from datakrash.clock import Clock
+from datakrash.config import ChallengeConfig, format_duration
+from datakrash.ntfy import Message, Ntfy, NtfyError
+from datakrash.state import Challenge
 
 LOG = logging.getLogger(__name__)
 
@@ -67,7 +67,7 @@ class Challenger:
     def is_password(self, text: str) -> bool:
         return password.verify(text.strip(), self.password_hash)
 
-    def notice(self, message: str, *, title: str = "Deadman switch") -> None:
+    def notice(self, message: str, *, title: str = "Datakrash") -> None:
         """Informational push to the owner; a failure here is logged, never fatal."""
 
         try:

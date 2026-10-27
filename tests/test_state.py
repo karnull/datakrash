@@ -7,7 +7,7 @@ Copyright (c) 2026 Apache-2.0 license
 
 import pytest
 
-from deadman_switch.state import FIRED, Challenge, Send, State, StateCorrupt, StateStore
+from datakrash.state import FIRED, Challenge, Send, State, StateCorrupt, StateStore
 from tests.fakes import START
 
 

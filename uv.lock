@@ -149,7 +149,7 @@ wheels = [
 ]
 
 [[package]]
-name = "deadman-switch"
+name = "datakrash"
 source = { editable = "." }
 dependencies = [
     { name = "colorlog" },

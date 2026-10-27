@@ -18,8 +18,8 @@ from datetime import timedelta
 from pathlib import Path
 from typing import Any, Mapping
 
-DEFAULT_PATH = Path("/etc/deadman-switch/config.toml")
-DEFAULT_STATE = Path("/var/lib/deadman-switch/state.json")
+DEFAULT_PATH = Path("/etc/datakrash/config.toml")
+DEFAULT_STATE = Path("/var/lib/datakrash/state.json")
 DEFAULT_SCHEDULE = ("0h", "1h30m", "3h", "1d", "2d", "3d", "4d", "5d", "6d")
 
 _DURATION = re.compile(r"(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?")

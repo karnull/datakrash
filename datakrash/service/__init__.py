@@ -12,8 +12,8 @@ import inspect
 import pkgutil
 from typing import Any
 
-from deadman_switch.config import ConfigError
-from deadman_switch.service.base import CheckFailed, Service
+from datakrash.config import ConfigError
+from datakrash.service.base import CheckFailed, Service
 
 __all__ = ["CheckFailed", "Service", "available", "build"]
 

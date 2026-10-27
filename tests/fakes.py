@@ -7,8 +7,8 @@ Copyright (c) 2026 Apache-2.0 license
 
 from datetime import datetime, timedelta, timezone
 
-from deadman_switch.ntfy import Message, NtfyError
-from deadman_switch.service import CheckFailed
+from datakrash.ntfy import Message, NtfyError
+from datakrash.service import CheckFailed
 
 START = datetime(2026, 10, 26, 12, 0, tzinfo=timezone.utc)
 
@@ -93,7 +93,7 @@ class RecordingNotifier:
         self.sent = []
 
     def send(self, to, subject, body):
-        from deadman_switch.notifier import NotifyFailed
+        from datakrash.notifier import NotifyFailed
 
         if self.fail_times:
             self.fail_times -= 1

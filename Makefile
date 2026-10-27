@@ -1,6 +1,6 @@
 # Project tasks. CI runs format-dry-run, build, test and release.
 
-PACKAGE := deadman_switch
+PACKAGE := datakrash
 
 .PHONY: build format format-dry-run test release
 
