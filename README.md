@@ -116,7 +116,7 @@ $ make format-dry-run   # list files that need formatting
 
 `make release` builds a wheel and an sdist into `dist/`. They install on any platform with Python 3.13.
 
-The package version is read from `VERSION`, the same version CI releases, so bump only that file.
+The package version comes from the release tags through setuptools-scm, so there is nothing to bump. In CI it is the version being released; locally it is worked out from `git describe`, or `0.0.0` with no tags or no git.
 
 
 
