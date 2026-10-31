@@ -274,13 +274,13 @@ def _set_password(path: Path) -> int:
     return EXIT_OK
 
 
-def _systemd_units(cfg: config.Config, args: argparse.Namespace) -> int:
+def _systemd_units(system: config.SystemConfig, args: argparse.Namespace) -> int:
     executable = shutil.which("datakrash") or Path(sys.argv[0]).resolve()
     rendered = units.render(
         executable=Path(executable),
         config=args.config,
         user=args.user,
-        trigger=cfg.system.trigger,
+        trigger=system.trigger,
     )
     for path in units.write(args.out, rendered):
         LOG.info("Wrote %s", path)
@@ -293,9 +293,10 @@ def run(args: argparse.Namespace) -> int:
     if args.command == "set-password":
         return _set_password(args.config)
 
-    cfg = config.load(args.config)
     if args.command == "systemd-units":
-        return _systemd_units(cfg, args)
+        return _systemd_units(config.system_section(args.config), args)
+
+    cfg = config.load(args.config)
 
     if args.command == "check":
         return _check(cfg)
