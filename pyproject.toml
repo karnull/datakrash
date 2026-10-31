@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=80"]
+requires = ["setuptools>=80", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -20,17 +20,21 @@ dependencies = [
 [project.scripts]
 datakrash = "datakrash.main:main"
 
-# setuptools reads VERSION, the version CI releases
-[tool.setuptools.dynamic]
-version = { file = "VERSION" }
+# setuptools-scm reads the release tags, or the version CI passes in through the Makefile
+[tool.setuptools_scm]
+fallback_version = "0.0.0"
 
 [tool.setuptools.packages.find]
 include = ["datakrash*"]
 
 [tool.uv]
 package = true
-# rebuild the installed project when VERSION changes, so its metadata stays current
-cache-keys = [{ file = "pyproject.toml" }, { file = "VERSION" }]
+# rebuild the installed project when the version changes, so its metadata stays current
+cache-keys = [
+    { file = "pyproject.toml" },
+    { git = { commit = true, tags = true } },
+    { env = "SETUPTOOLS_SCM_PRETEND_VERSION" },
+]
 
 [dependency-groups]
 dev = [
