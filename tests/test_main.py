@@ -7,7 +7,7 @@ Copyright (c) 2026 Apache-2.0 license
 
 import logging
 
-from datakrash.main import _build_parser, _resolve_log_level
+from datakrash.main import _build_parser, _DrillFilter, _resolve_log_level
 
 
 def test_logs_at_info_by_default():
@@ -23,3 +23,12 @@ def test_double_verbose_logs_at_debug():
 def test_quiet_logs_warnings_only():
     args = _build_parser("app").parse_args(["-q", "run"])
     assert _resolve_log_level(args) == logging.WARN
+
+
+def test_drill_marks_a_line_once_across_handlers():
+    record = logging.LogRecord(
+        "x", logging.INFO, __file__, 1, "Run finished", None, None
+    )
+    for _ in range(2):
+        _DrillFilter().filter(record)
+    assert record.getMessage() == "[DRILL] Run finished"

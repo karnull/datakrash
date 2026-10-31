@@ -39,6 +39,7 @@ LOG = logging.getLogger(__name__)
 
 DRILL_REPLY_WINDOW = timedelta(seconds=60)
 DRILL_SPEED = 3600
+DRILL_PREFIX = "[DRILL] "
 
 
 class Quiet(Service):
@@ -50,7 +51,8 @@ class Quiet(Service):
 
 class _DrillFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
-        record.msg = f"[DRILL] {record.msg}"
+        if not str(record.msg).startswith(DRILL_PREFIX):
+            record.msg = f"{DRILL_PREFIX}{record.msg}"
         return True
 
 
@@ -239,7 +241,7 @@ def _build_watch(
     clock = Clock()
     ntfy = Ntfy(settings.server, settings.token)
     challenger = Challenger(
-        settings, ntfy, stored_hash, clock, label="[DRILL] " if drill else ""
+        settings, ntfy, stored_hash, clock, label=DRILL_PREFIX if drill else ""
     )
     return Watch(services, routes, contact, challenger, store, clock)
 
