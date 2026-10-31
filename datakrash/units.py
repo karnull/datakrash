@@ -23,7 +23,7 @@ StartLimitIntervalSec=0
 [Service]
 Type=oneshot
 User={user}
-ExecStart={executable} --config {config} run
+ExecStart="{executable}" --config "{config}" run
 # a challenge waits through every reply window, and a fired switch works through a week of messages
 TimeoutStartSec=infinity
 StateDirectory=datakrash

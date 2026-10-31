@@ -19,7 +19,12 @@ class Smtp(Notifier):
 
     def _connect(self) -> smtplib.SMTP:
         host = self.setting("host")
-        port = int(self.settings.get("port", 587))
+        try:
+            port = int(self.settings.get("port", 587))
+        except (TypeError, ValueError) as exc:
+            raise NotifyFailed(
+                f"notifier.{self.channel}.port must be a number"
+            ) from exc
         security = self.settings.get("security", "starttls")
         context = ssl.create_default_context()
 
