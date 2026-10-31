@@ -210,7 +210,10 @@ def _configure_logging(level: int, log_file: str | None) -> None:
 
 
 def _build_watch(
-    cfg: config.Config, *, drill: bool = False, silent: bool = False
+    cfg: config.Config,
+    *,
+    drill_state: Path | None = None,
+    silent: bool = False,
 ) -> Watch:
     stored_hash = password.read(cfg.challenge.password_file)
     if not cfg.contact.message.is_file():
@@ -223,6 +226,7 @@ def _build_watch(
     services = service.build(cfg.services)
     routes = notifier.routes(contact, notifier.build(cfg.notifiers))
     store = StateStore(cfg.system.state)
+    drill = drill_state is not None
 
     if drill:
         settings = replace(settings, reply_window=DRILL_REPLY_WINDOW)
@@ -232,9 +236,7 @@ def _build_watch(
         routes = [
             (Printer(n.channel, n.address_field), address) for n, address in routes
         ]
-        store = StateStore(
-            Path(tempfile.mkdtemp(prefix="datakrash-drill-")) / "state.json"
-        )
+        store = StateStore(drill_state)
         if silent:
             services = [Quiet(s.name, s.settings) for s in services]
 
@@ -309,7 +311,9 @@ def run(args: argparse.Namespace) -> int:
             "Drill: the contact schedule runs %d times faster than real time",
             DRILL_SPEED,
         )
-        return _build_watch(cfg, drill=True, silent=args.silent).run()
+        with tempfile.TemporaryDirectory(prefix="datakrash-drill-") as directory:
+            drill_state = Path(directory) / "state.json"
+            return _build_watch(cfg, drill_state=drill_state, silent=args.silent).run()
 
     return _build_watch(cfg).run()
 
