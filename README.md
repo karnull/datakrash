@@ -51,8 +51,10 @@ $ make build
 5. Check that every service answers:
 
    ```bash
-   $ datakrash --config /etc/datakrash/config.toml check
+   $ sudo sh -c 'set -a; . /etc/datakrash/env; exec datakrash --config /etc/datakrash/config.toml check'
    ```
+
+   `check` loads the whole config, so it needs the secrets from the env file, just as a timer run does.
 
 ### Install the timer
 
