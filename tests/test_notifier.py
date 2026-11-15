@@ -139,3 +139,10 @@ def test_phone_without_sms_notifier_is_a_config_error():
     built = notifier.build({"email": SMTP})
     with pytest.raises(ConfigError, match="contact.phone"):
         notifier.routes(_contact(phone="+15551234567"), built)
+
+
+def test_smtp_bad_port_is_a_failed_channel(fake_smtp):
+    with pytest.raises(NotifyFailed, match="port"):
+        Smtp("email", {**SMTP, "port": "587a"}).send(
+            "contact@example.com", "Subject", "Body"
+        )

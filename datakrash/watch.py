@@ -182,12 +182,14 @@ class Watch:
         return {notifier.channel for notifier, _ in self.routes}
 
     def _next_send(self, state: State) -> Send | None:
+        channels = self._channels()
+        now = self.clock.now()
         pending = [
             send
             for send in state.sends
-            if not send.skipped and not self._channels() <= set(send.delivered)
+            if not send.skipped and not channels <= set(send.delivered)
         ]
-        overdue = [send for send in pending if send.due <= self.clock.now()]
+        overdue = [send for send in pending if send.due <= now]
 
         # after a long outage, several sends are due at once; the contact gets one, not a burst
         for send in overdue[:-1]:

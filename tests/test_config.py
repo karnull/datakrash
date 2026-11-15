@@ -133,3 +133,11 @@ def test_example_config_is_valid():
         },
     )
     assert "github" in example.services
+
+
+def test_system_section_needs_no_secrets(monkeypatch):
+    monkeypatch.delenv("DATAKRASH_NTFY_TOKEN", raising=False)
+    system = config.system_section(
+        config.Path(__file__).parent.parent / "config.example.toml"
+    )
+    assert system.trigger == timedelta(hours=12)

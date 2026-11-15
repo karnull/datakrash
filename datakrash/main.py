@@ -39,6 +39,7 @@ LOG = logging.getLogger(__name__)
 
 DRILL_REPLY_WINDOW = timedelta(seconds=60)
 DRILL_SPEED = 3600
+DRILL_PREFIX = "[DRILL] "
 
 
 class Quiet(Service):
@@ -50,7 +51,8 @@ class Quiet(Service):
 
 class _DrillFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
-        record.msg = f"[DRILL] {record.msg}"
+        if not str(record.msg).startswith(DRILL_PREFIX):
+            record.msg = f"{DRILL_PREFIX}{record.msg}"
         return True
 
 
@@ -208,7 +210,10 @@ def _configure_logging(level: int, log_file: str | None) -> None:
 
 
 def _build_watch(
-    cfg: config.Config, *, drill: bool = False, silent: bool = False
+    cfg: config.Config,
+    *,
+    drill_state: Path | None = None,
+    silent: bool = False,
 ) -> Watch:
     stored_hash = password.read(cfg.challenge.password_file)
     if not cfg.contact.message.is_file():
@@ -221,6 +226,7 @@ def _build_watch(
     services = service.build(cfg.services)
     routes = notifier.routes(contact, notifier.build(cfg.notifiers))
     store = StateStore(cfg.system.state)
+    drill = drill_state is not None
 
     if drill:
         settings = replace(settings, reply_window=DRILL_REPLY_WINDOW)
@@ -230,16 +236,14 @@ def _build_watch(
         routes = [
             (Printer(n.channel, n.address_field), address) for n, address in routes
         ]
-        store = StateStore(
-            Path(tempfile.mkdtemp(prefix="datakrash-drill-")) / "state.json"
-        )
+        store = StateStore(drill_state)
         if silent:
             services = [Quiet(s.name, s.settings) for s in services]
 
     clock = Clock()
     ntfy = Ntfy(settings.server, settings.token)
     challenger = Challenger(
-        settings, ntfy, stored_hash, clock, label="[DRILL] " if drill else ""
+        settings, ntfy, stored_hash, clock, label=DRILL_PREFIX if drill else ""
     )
     return Watch(services, routes, contact, challenger, store, clock)
 
@@ -274,13 +278,13 @@ def _set_password(path: Path) -> int:
     return EXIT_OK
 
 
-def _systemd_units(cfg: config.Config, args: argparse.Namespace) -> int:
+def _systemd_units(system: config.SystemConfig, args: argparse.Namespace) -> int:
     executable = shutil.which("datakrash") or Path(sys.argv[0]).resolve()
     rendered = units.render(
         executable=Path(executable),
         config=args.config,
         user=args.user,
-        trigger=cfg.system.trigger,
+        trigger=system.trigger,
     )
     for path in units.write(args.out, rendered):
         LOG.info("Wrote %s", path)
@@ -293,9 +297,10 @@ def run(args: argparse.Namespace) -> int:
     if args.command == "set-password":
         return _set_password(args.config)
 
-    cfg = config.load(args.config)
     if args.command == "systemd-units":
-        return _systemd_units(cfg, args)
+        return _systemd_units(config.system_section(args.config), args)
+
+    cfg = config.load(args.config)
 
     if args.command == "check":
         return _check(cfg)
@@ -306,7 +311,9 @@ def run(args: argparse.Namespace) -> int:
             "Drill: the contact schedule runs %d times faster than real time",
             DRILL_SPEED,
         )
-        return _build_watch(cfg, drill=True, silent=args.silent).run()
+        with tempfile.TemporaryDirectory(prefix="datakrash-drill-") as directory:
+            drill_state = Path(directory) / "state.json"
+            return _build_watch(cfg, drill_state=drill_state, silent=args.silent).run()
 
     return _build_watch(cfg).run()
 

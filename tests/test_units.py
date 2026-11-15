@@ -28,7 +28,7 @@ def test_service_runs_the_switch_with_retries():
     service = _render()["datakrash.service"]
 
     assert (
-        "ExecStart=/usr/local/bin/datakrash --config /etc/datakrash/config.toml run"
+        'ExecStart="/usr/local/bin/datakrash" --config "/etc/datakrash/config.toml" run'
         in service
     )
     assert "User=watcher" in service

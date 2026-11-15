@@ -266,13 +266,22 @@ def load(path: Path, env: Mapping[str, str] | None = None) -> Config:
     return parse(data, env)
 
 
-def password_path(path: Path) -> Path:
-    """Read only challenge.password_file, so the password can be set before secrets exist."""
-
+def _read_without_secrets(path: Path) -> dict[str, Any]:
     try:
         with open(path, "rb") as handle:
-            data = tomllib.load(handle)
+            return tomllib.load(handle)
     except (OSError, tomllib.TOMLDecodeError) as exc:
         raise ConfigError(f"cannot read {path}: {exc}") from exc
 
+
+def password_path(path: Path) -> Path:
+    """Read only challenge.password_file, so the password can be set before secrets exist."""
+
+    data = _read_without_secrets(path)
     return Path(_require(_table(data, "challenge"), "password_file", "challenge"))
+
+
+def system_section(path: Path) -> SystemConfig:
+    """Read only [system], so the units can be written before secrets exist."""
+
+    return _system(_read_without_secrets(path))
